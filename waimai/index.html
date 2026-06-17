@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外卖一单算明白 · 满减/活动定价不亏</title>
+<style>
+  :root{
+    --bg:#f5f5f0; --card:#ffffff; --line:#e3e1d8; --text:#2c2c2a; --muted:#76746c;
+    --accent:#1d9e75; --accentbg:#e1f5ee; --danger:#c0392b; --dangerbg:#fbeaea;
+    --blue:#185fa5; --bluebg:#e6f1fb; --track:#e3e1d8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.55; padding:16px;}
+  .wrap{max-width:640px; margin:0 auto;}
+  h1{font-size:21px; font-weight:600; margin:6px 0 4px;}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 14px;}
+  .verdict{border-radius:14px; padding:16px; margin-bottom:14px; text-align:center;
+    position:sticky; top:8px; z-index:5; box-shadow:0 2px 12px rgba(0,0,0,.07);}
+  .verdict.ok{background:var(--accentbg); border:1px solid #a9ddca;}
+  .verdict.bad{background:var(--dangerbg); border:1px solid #ecc4be;}
+  .vbig{font-size:29px; font-weight:600; margin:2px 0 5px;}
+  .vbig.ok{color:#0f6e56;} .vbig.bad{color:var(--danger);}
+  .vmsg{font-size:14px;}
+  .vmsg.ok{color:#0f6e56;} .vmsg.bad{color:#8a2b20;}
+  .row3{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:11px;}
+  .mini{background:rgba(255,255,255,.6); border-radius:8px; padding:7px 5px;}
+  .mini .l{font-size:11px; color:var(--muted);}
+  .mini .v{font-size:16px; font-weight:600;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px; margin-bottom:13px;}
+  .card h2{font-size:15px; font-weight:600; margin:0 0 3px;}
+  .card .ch{font-size:12px; color:var(--muted); margin:0 0 13px;}
+  .srow{display:flex; align-items:center; gap:11px; margin-bottom:14px;}
+  .srow label{width:148px; font-size:13.5px; flex-shrink:0; line-height:1.25;}
+  .srow label small{display:block; font-size:11px; color:var(--muted);}
+  .srow .out{width:60px; text-align:right; font-size:15px; font-weight:600; flex-shrink:0; color:var(--blue);}
+  @media(max-width:480px){.srow label{width:120px;}}
+  input[type=range]{-webkit-appearance:none; appearance:none; flex:1; height:6px;
+    background:var(--track); border-radius:6px; outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px;
+    border-radius:50%; background:var(--accent); cursor:pointer; border:3px solid #fff;
+    box-shadow:0 1px 4px rgba(0,0,0,.25);}
+  input[type=range]::-moz-range-thumb{width:22px; height:22px; border-radius:50%;
+    background:var(--accent); cursor:pointer; border:3px solid #fff;}
+  .detail{font-size:13.5px;}
+  .detail .line{display:flex; justify-content:space-between; padding:5px 0;
+    border-bottom:1px dashed var(--line);}
+  .detail .line:last-child{border-bottom:none;}
+  .detail .line .v{font-weight:600;}
+  .detail .sum{background:var(--bg); margin:0 -16px; padding:7px 16px; font-weight:600;}
+  .neg{color:var(--danger);} .pos{color:var(--accent);}
+  .tip{background:#fcf6e9; border:1px solid #ecdcb4; border-radius:10px; padding:11px 13px;
+    font-size:13px; color:#7a5a12; margin-bottom:13px;}
+  .seg{display:flex; gap:8px; margin-bottom:14px;}
+  .seg button{flex:1; border:1px solid var(--line); background:#fff; border-radius:8px;
+    padding:8px; font-size:13px; cursor:pointer; color:var(--text);}
+  .seg button.on{background:var(--accent); color:#fff; border-color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>外卖一单算明白 · 满减/活动定价不亏</h1>
+  <p class="sub">上外卖、设满减/减配送费活动前，拖你自己的数，看这一单到底赚还是亏，活动让利最多能给到多少。</p>
+
+  <div class="tip">💡 很多老板栽在这：满减+券叠满，扣完平台抽成、配送费、食材，<b>卖一单亏一单还不知道</b>。先算明白再上活动。</div>
+
+  <div class="verdict ok" id="verdict">
+    <div class="l" style="font-size:13px;color:var(--muted)">这一单</div>
+    <div class="vbig ok" id="v_profit">+¥0</div>
+    <div class="vmsg ok" id="v_msg"></div>
+    <div class="row3">
+      <div class="mini"><div class="l">商家到手</div><div class="v" id="v_net">¥0</div></div>
+      <div class="mini"><div class="l">这单毛利率</div><div class="v" id="v_margin">0%</div></div>
+      <div class="mini"><div class="l">活动让利安全线</div><div class="v" id="v_safe">¥0</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>① 这单收入</h2>
+    <p class="ch">顾客这一单总共给你的钱（商品 + 配送费 + 包装费）。</p>
+    <div class="srow"><label>商品下单金额<small>用券前标价合计</small></label><input type="range" id="p_order" min="10" max="150" step="1" value="40"><span class="out" id="o_p_order"></span></div>
+    <div class="srow"><label>顾客付的配送费<small>包邮/免配送费就拉0</small></label><input type="range" id="cust_ship" min="0" max="12" step="0.5" value="3"><span class="out" id="o_cust_ship"></span></div>
+    <div class="srow"><label>顾客付的包装费<small>没单收就拉0</small></label><input type="range" id="pack_income" min="0" max="8" step="0.5" value="1"><span class="out" id="o_pack_income"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>② 平台扣费</h2>
+    <p class="ch">老店多是“全包费率18–22%”→佣金拉高、平台配送费拉0；费率透明化后是“佣金6–8% + 配送费单独”。按你后台实际填。</p>
+    <div class="srow"><label>平台佣金率<small>技术服务费</small></label><input type="range" id="comm_rate" min="5" max="25" step="0.5" value="7"><span class="out" id="o_comm_rate"></span></div>
+    <div class="srow"><label>佣金保底/单<small>低客单按这个收</small></label><input type="range" id="comm_floor" min="0" max="4" step="0.1" value="1.2"><span class="out" id="o_comm_floor"></span></div>
+    <div class="srow"><label>平台配送费/单<small>自己送就拉0</small></label><input type="range" id="plat_ship" min="0" max="12" step="0.5" value="5"><span class="out" id="o_plat_ship"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 我做的活动让利</h2>
+    <p class="ch">这些是你自己掏钱补的。减配送费活动 = 把上面“顾客付的配送费”往下拉。</p>
+    <div class="srow"><label>满减让利<small>满X减Y就填Y</small></label><input type="range" id="md" min="0" max="40" step="1" value="5"><span class="out" id="o_md"></span></div>
+    <div class="srow"><label>代金券/红包<small>商家承担那部分</small></label><input type="range" id="cp" min="0" max="30" step="1" value="0"><span class="out" id="o_cp"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>④ 我的成本</h2>
+    <p class="ch">食材是大头；推广费按你每单摊到多少填（不投就拉0）。</p>
+    <div class="srow"><label>食材成本率<small>食材进价占商品价</small></label><input type="range" id="food_rate" min="20" max="60" step="1" value="38"><span class="out" id="o_food_rate"></span></div>
+    <div class="srow"><label>包装成本/单<small>盒子袋子实际花的</small></label><input type="range" id="pack_cost" min="0" max="8" step="0.5" value="1.5"><span class="out" id="o_pack_cost"></span></div>
+    <div class="srow"><label>推广费/单<small>竞价点击摊每单</small></label><input type="range" id="ad" min="0" max="10" step="0.5" value="0"><span class="out" id="o_ad"></span></div>
+  </div>
+
+  <div class="card detail">
+    <h2 style="margin-bottom:10px">这一单账，一笔笔看清</h2>
+    <div class="line"><span>商品下单金额</span><span class="v" id="d_order">¥0</span></div>
+    <div class="line"><span>+ 顾客配送费</span><span class="v" id="d_cust_ship">¥0</span></div>
+    <div class="line"><span>+ 顾客包装费</span><span class="v" id="d_pack_income">¥0</span></div>
+    <div class="line sum"><span>= 这单总收入</span><span class="v" id="d_income">¥0</span></div>
+    <div class="line"><span>− 平台佣金</span><span class="v" id="d_comm">¥0</span></div>
+    <div class="line"><span>− 平台配送费</span><span class="v" id="d_plat_ship">¥0</span></div>
+    <div class="line"><span>− 满减让利</span><span class="v" id="d_md">¥0</span></div>
+    <div class="line"><span>− 代金券/红包</span><span class="v" id="d_cp">¥0</span></div>
+    <div class="line sum"><span>= 商家实际到手</span><span class="v" id="d_net">¥0</span></div>
+    <div class="line"><span>− 食材成本</span><span class="v" id="d_food">¥0</span></div>
+    <div class="line"><span>− 包装成本</span><span class="v" id="d_pack_cost">¥0</span></div>
+    <div class="line"><span>− 推广费</span><span class="v" id="d_ad">¥0</span></div>
+    <div class="line sum" style="font-size:15px"><span>= 这单净利</span><span class="v" id="d_profit">¥0</span></div>
+  </div>
+
+  <div class="card detail" style="color:var(--muted)">
+    <h2 style="color:var(--text)">怎么看（一眼懂）</h2>
+    <p><b style="color:var(--text)">商家到手</b>：收入扣掉平台佣金、配送费、你给的满减/券，才是真进口袋的。<b style="color:var(--text)">外卖标价 ≠ 到手</b>。</p>
+    <p><b style="color:var(--text)">活动让利安全线</b>：在你现在的费率和食材成本下，满减+券最多能给到这个数；<b style="color:var(--text)">超过它这单就亏</b>。设活动盯这条线。</p>
+    <p><b style="color:var(--text)">想多让利又不亏</b>：提价、降食材率、挑食材率低的菜做活动、或让顾客多担点配送费。</p>
+    <p style="font-size:12px">参考：纯外卖净利做到 10–15% 算健康，毛利一般 30–40%。数字填你店里真实的才准。</p>
+  </div>
+
+  <p class="sub" style="text-align:center">填你店里真实的数，结论才准。</p>
+</div>
+
+<script>
+function num(id){return parseFloat(document.getElementById(id).value)||0;}
+function yuan(n){var s=(Math.round(Math.abs(n)*100)/100).toLocaleString();return (n<0?'-¥':'¥')+s;}
+
+function calc(){
+  var P=num('p_order'), custShip=num('cust_ship'), packIn=num('pack_income');
+  var rc=num('comm_rate')/100, floor=num('comm_floor'), platShip=num('plat_ship');
+  var md=num('md'), cp=num('cp');
+  var rf=num('food_rate')/100, packCost=num('pack_cost'), ad=num('ad');
+
+  document.getElementById('o_p_order').textContent='¥'+P;
+  document.getElementById('o_cust_ship').textContent='¥'+custShip;
+  document.getElementById('o_pack_income').textContent='¥'+packIn;
+  document.getElementById('o_comm_rate').textContent=num('comm_rate')+'%';
+  document.getElementById('o_comm_floor').textContent='¥'+num('comm_floor');
+  document.getElementById('o_plat_ship').textContent='¥'+platShip;
+  document.getElementById('o_md').textContent='¥'+md;
+  document.getElementById('o_cp').textContent='¥'+cp;
+  document.getElementById('o_food_rate').textContent=num('food_rate')+'%';
+  document.getElementById('o_pack_cost').textContent='¥'+packCost;
+  document.getElementById('o_ad').textContent='¥'+ad;
+
+  var income=P+custShip+packIn;
+  var comm=Math.max(P*rc, floor);
+  var give=md+cp;
+  var net=income-comm-platShip-give;
+  var food=P*rf;
+  var myCost=food+packCost+ad;
+  var profit=net-myCost;
+  var margin=P>0?profit/P*100:0;
+  var safe=income-comm-platShip-myCost;
+
+  document.getElementById('d_order').textContent=yuan(P);
+  document.getElementById('d_cust_ship').textContent='+'+yuan(custShip);
+  document.getElementById('d_pack_income').textContent='+'+yuan(packIn);
+  document.getElementById('d_income').textContent=yuan(income);
+  document.getElementById('d_comm').textContent='-'+yuan(comm);
+  document.getElementById('d_plat_ship').textContent='-'+yuan(platShip);
+  document.getElementById('d_md').textContent='-'+yuan(md);
+  document.getElementById('d_cp').textContent='-'+yuan(cp);
+  document.getElementById('d_net').textContent=yuan(net);
+  document.getElementById('d_food').textContent='-'+yuan(food);
+  document.getElementById('d_pack_cost').textContent='-'+yuan(packCost);
+  document.getElementById('d_ad').textContent='-'+yuan(ad);
+  var dp=document.getElementById('d_profit');
+  dp.textContent=(profit>=0?'+':'')+yuan(profit); dp.className='v '+(profit>=0?'pos':'neg');
+
+  document.getElementById('v_net').textContent=yuan(net);
+  document.getElementById('v_margin').textContent=Math.round(margin)+'%';
+  document.getElementById('v_safe').textContent=safe>=0?yuan(safe):'¥0';
+
+  var vd=document.getElementById('verdict'), vb=document.getElementById('v_profit'), vm=document.getElementById('v_msg');
+  if(profit>=0){
+    vd.className='verdict ok'; vb.className='vbig ok'; vm.className='vmsg ok';
+    vb.textContent='赚 '+yuan(profit);
+    vm.innerHTML='毛利 '+Math.round(margin)+'%。满减+券还能加到 <b>'+yuan(safe)+'</b> 封顶，超了就开始亏。';
+  }else{
+    vd.className='verdict bad'; vb.className='vbig bad'; vm.className='vmsg bad';
+    vb.textContent='亏 '+yuan(-profit);
+    if(safe>=0){
+      vm.innerHTML='让利太狠！满减+券砍到 <b>'+yuan(safe)+'</b> 以内才保本，或提价/降食材。';
+    }else{
+      vm.innerHTML='光佣金+配送+食材就超过收入了——<b>这个价撑不住</b>，得提价或压成本，砍满减救不回来。';
+    }
+  }
+}
+document.querySelectorAll('input[type=range]').forEach(function(i){i.addEventListener('input',calc);});
+calc();
+</script>
+</body>
+</html>
