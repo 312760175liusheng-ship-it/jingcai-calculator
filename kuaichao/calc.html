@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机器人快炒外卖店 · 单店利润测算计算器</title>
+<style>
+  :root{
+    --bg:#f5f5f0; --card:#ffffff; --line:#e3e1d8; --text:#2c2c2a; --muted:#76746c;
+    --accent:#1d9e75; --accentbg:#e1f5ee; --danger:#c0392b; --dangerbg:#fbeaea;
+    --blue:#185fa5; --bluebg:#e6f1fb; --track:#e3e1d8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6; padding:16px;}
+  .wrap{max-width:720px; margin:0 auto;}
+  h1{font-size:22px; font-weight:600; margin:8px 0 4px;}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 18px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin-bottom:16px;}
+  .card h2{font-size:16px; font-weight:600; margin:0 0 4px;}
+  .card .hint{color:var(--muted); font-size:13px; margin:0 0 14px;}
+  .srow{display:flex; align-items:center; gap:12px; margin-bottom:13px;}
+  .srow label{width:130px; font-size:14px; flex-shrink:0;}
+  .srow .out{width:74px; text-align:right; font-size:14px; font-weight:600; flex-shrink:0;}
+  input[type=range]{-webkit-appearance:none; appearance:none; flex:1; height:5px;
+    background:var(--track); border-radius:5px; outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px;
+    border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid #fff;
+    box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:50%;
+    background:var(--accent); cursor:pointer; border:2px solid #fff;}
+  .presets{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .btn{border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px;
+    font-size:13px; cursor:pointer; color:var(--text);}
+  .btn:hover{background:var(--bg);} .btn:active{transform:scale(.98);}
+  .summary{position:sticky; top:8px; z-index:5; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:16px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  @media(max-width:560px){.metrics{grid-template-columns:1fr 1fr;} .srow label{width:104px;}}
+  .metric{background:var(--bg); border-radius:8px; padding:10px 12px;}
+  .metric .l{font-size:12px; color:var(--muted); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600;}
+  .verdict{margin-top:12px; padding:10px 12px; border-radius:8px; font-size:14px;}
+  .ok{background:var(--accentbg); color:#0f6e56;}
+  .bad{background:var(--dangerbg); color:var(--danger);}
+  .line{display:flex; justify-content:space-between; font-size:14px; padding:5px 0;
+    border-bottom:1px dashed var(--line);}
+  .line:last-child{border-bottom:none;} .line .v{font-weight:600;}
+  .pos{color:var(--accent);} .neg{color:var(--danger);}
+  .explain{font-size:13.5px;}
+  .explain h3{font-size:14px; font-weight:600; margin:14px 0 4px;}
+  .explain code{background:var(--bg); padding:2px 7px; border-radius:6px; font-size:13px;
+    font-family:"SF Mono",Menlo,monospace; color:var(--blue); display:inline-block; margin:3px 0;}
+  .explain p{margin:2px 0 8px; color:var(--text);}
+  .explain .mu{color:var(--muted);}
+  .warnbox{background:var(--dangerbg); border:1px solid #f0c9c4; border-radius:10px;
+    padding:12px 14px; font-size:13.5px; color:#8a2b20; margin-bottom:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>机器人快炒外卖店 · 单店利润测算</h1>
+  <p class="sub">拖动滑块试不同情景，顶部实时算出月利润、保本单量、回本周期。文末有每个数字的详细计算说明。</p>
+
+  <div class="warnbox">
+    ⚠️ <b>用法关键</b>：别用这里的假设值拍脑袋，<b>去扒手下那家样板店上个月的真实数字</b>填进来——真实单量、外卖到手价、食材成本、人工。真账算出来还赚，再谈开店和合伙。
+  </div>
+
+  <div class="summary">
+    <div class="metrics">
+      <div class="metric"><div class="l">月营业额</div><div class="v" id="m_rev">¥0</div></div>
+      <div class="metric"><div class="l">月净利润</div><div class="v" id="m_profit">¥0</div></div>
+      <div class="metric"><div class="l">保本日单量</div><div class="v" id="m_be">0 单</div></div>
+      <div class="metric"><div class="l">回本周期</div><div class="v" id="m_payback">—</div></div>
+    </div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div class="card">
+    <h2>① 每月单量与客单价（按渠道）</h2>
+    <p class="hint">这是外卖为主的店，外卖和堂食分开拉——只有外卖被平台抽成+满减啃。客单价填"平台上的标价"，到手扣减放在第②块。下面按钮一键套情景。</p>
+    <div class="presets">
+      <button class="btn" onclick="preset('low')">😟 悲观档</button>
+      <button class="btn" onclick="preset('mid')">😐 中性档</button>
+      <button class="btn" onclick="preset('high')">😄 乐观档</button>
+    </div>
+    <div class="srow"><label>外卖 日均单量</label><input type="range" id="d_take" min="0" max="220" step="5" value="100"><span class="out" id="o_d_take"></span></div>
+    <div class="srow"><label>外卖 标价客单</label><input type="range" id="p_take" min="8" max="50" step="1" value="22"><span class="out" id="o_p_take"></span></div>
+    <div class="srow"><label>堂食 日均单量</label><input type="range" id="d_dine" min="0" max="120" step="5" value="20"><span class="out" id="o_d_dine"></span></div>
+    <div class="srow"><label>堂食 客单价</label><input type="range" id="p_dine" min="8" max="50" step="1" value="22"><span class="out" id="o_p_dine"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>② 成本率（随营业额走的变动成本）</h2>
+    <p class="hint">外卖那两条是最吃利润的隐形大头：平台抽成 + 满减/活动补贴，加起来常让外卖标价只到手 6–7 成。</p>
+    <div class="srow"><label>食材成本率<br><span style="font-size:11px;color:var(--muted)">总部供货价决定</span></label><input type="range" id="c_food" min="30" max="55" step="1" value="40"><span class="out" id="o_c_food"></span></div>
+    <div class="srow"><label>外卖平台抽成</label><input type="range" id="c_dfee" min="0" max="28" step="1" value="22"><span class="out" id="o_c_dfee"></span></div>
+    <div class="srow"><label>外卖满减/活动补贴<br><span style="font-size:11px;color:var(--muted)">占外卖营业额</span></label><input type="range" id="c_promo" min="0" max="30" step="1" value="10"><span class="out" id="o_c_promo"></span></div>
+    <div class="srow"><label>包装耗材率</label><input type="range" id="c_pack" min="0" max="12" step="1" value="5"><span class="out" id="o_c_pack"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 每月固定开销 + 人工</h2>
+    <p class="hint">机器人快炒省的是厨师，但店长、打包、配送对接还是要人。偏僻铺面做纯外卖可压低房租。</p>
+    <div class="srow"><label>房租/月</label><input type="range" id="c_rent" min="1000" max="20000" step="500" value="4000"><span class="out" id="o_c_rent"></span></div>
+    <div class="srow"><label>水电燃气/月</label><input type="range" id="c_util" min="0" max="10000" step="100" value="2500"><span class="out" id="o_c_util"></span></div>
+    <div class="srow"><label>营销+杂费/月</label><input type="range" id="c_mkt" min="0" max="10000" step="100" value="3000"><span class="out" id="o_c_mkt"></span></div>
+    <div class="srow"><label>经营合伙人工资<br><span style="font-size:11px;color:var(--muted)">店长·管日常/月</span></label><input type="range" id="w_op" min="0" max="20000" step="500" value="6000"><span class="out" id="o_w_op"></span></div>
+    <div class="srow"><label>额外雇工/月</label><input type="range" id="w_hire" min="0" max="20000" step="500" value="3000"><span class="out" id="o_w_hire"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>④ 一次性启动投入</h2>
+    <p class="hint">开张前砸进去的钱，决定多久回本。加盟这类要把加盟费、保证金算进去。</p>
+    <div class="srow"><label>炒菜机器人+设备</label><input type="range" id="i_equip" min="0" max="250000" step="5000" value="100000"><span class="out" id="o_i_equip"></span></div>
+    <div class="srow"><label>装修整改</label><input type="range" id="i_deco" min="0" max="150000" step="5000" value="30000"><span class="out" id="o_i_deco"></span></div>
+    <div class="srow"><label>加盟费+保证金<br><span style="font-size:11px;color:var(--muted)">+首批进货+备用金</span></label><input type="range" id="i_misc" min="0" max="200000" step="5000" value="80000"><span class="out" id="o_i_misc"></span></div>
+    <div class="srow"><label>设备折旧年限</label><input type="range" id="i_dep" min="2" max="8" step="1" value="4"><span class="out" id="o_i_dep"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 成本与利润明细</h2>
+    <div class="line"><span>月营业额（按标价）</span><span class="v" id="r_rev">¥0</span></div>
+    <div class="line"><span>食材成本</span><span class="v" id="r_food">¥0</span></div>
+    <div class="line"><span>外卖平台抽成</span><span class="v" id="r_dfee">¥0</span></div>
+    <div class="line"><span>外卖满减/活动补贴</span><span class="v" id="r_promo">¥0</span></div>
+    <div class="line"><span>包装耗材</span><span class="v" id="r_pack">¥0</span></div>
+    <div class="line"><span>人工工资</span><span class="v" id="r_labor">¥0</span></div>
+    <div class="line"><span>房租+水电+营销杂费</span><span class="v" id="r_fixed">¥0</span></div>
+    <div class="line"><span>设备折旧</span><span class="v" id="r_dep">¥0</span></div>
+    <div class="line"><span>月总成本</span><span class="v" id="r_cost">¥0</span></div>
+    <div class="line" style="font-size:16px"><span>月净利润</span><span class="v" id="r_profit">¥0</span></div>
+    <div class="line"><span>净利率</span><span class="v" id="r_margin">0%</span></div>
+    <div class="line"><span>外卖实际到手率</span><span class="v" id="r_takerate">—</span></div>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 分钱：郝哥（出资+指挥）+ 经营合伙人</h2>
+    <p class="hint">利润先发完工资（已在成本里扣），剩下按股份分红。郝哥默认出钱+指挥、不拿工资只拿分红；经营合伙人拿工资+分红。拉滑块调经营合伙人占股。</p>
+    <div class="srow"><label>经营合伙人股份</label><input type="range" id="op_share" min="0" max="100" step="5" value="40"><span class="out" id="o_op_share"></span></div>
+    <div class="line"><span>郝哥（出资方）月到手（分红）</span><span class="v" id="r_inv_take">¥0</span></div>
+    <div class="line"><span>经营合伙人 月到手（工资+分红）</span><span class="v" id="r_op_take">¥0</span></div>
+    <div class="line"><span>经营合伙人 年到手</span><span class="v" id="r_op_year">¥0</span></div>
+  </div>
+
+  <div class="card explain">
+    <h2>📖 详细计算说明（每个数字怎么来的）</h2>
+
+    <h3>1. 月营业额（按平台标价）</h3>
+    <code>月营业额 =（外卖单量×外卖标价 + 堂食单量×堂食客单价）× 30</code>
+    <p class="mu">例：外卖100单×22 + 堂食20单×22 = 2200+440 = 2640元/天 × 30 ≈ 79,200元/月。注意这是"标价"，外卖到手要再扣下面两项。</p>
+
+    <h3>2. 食材成本（总部供货价决定）</h3>
+    <code>食材成本 = 月营业额 × 食材成本率</code>
+    <p class="mu">加盟店食材一般由总部配送，供货价直接决定毛利。<b>别信总部画的理想值，扒样板店真实成本率</b>，一般 38–45%。</p>
+
+    <h3>3. 外卖平台抽成（只抽外卖）</h3>
+    <code>外卖抽成 = 外卖营业额 × 抽成率</code>
+    <p class="mu">堂食不被抽成。美团一般抽 20–23%。</p>
+
+    <h3>4. 外卖满减/活动补贴（最易被忽略的隐形大头）</h3>
+    <code>满减补贴 = 外卖营业额 × 补贴率</code>
+    <p class="mu">满20减5、满减券、配送费补贴这些，商家自己要掏一部分。它和抽成加起来，常让<b>外卖标价实际只到手 6–7 成</b>——这是外卖快餐最容易算漏、也最吃利润的一块。</p>
+
+    <h3>5. 包装耗材</h3>
+    <code>包装耗材 = 月营业额 × 包装率</code>
+    <p class="mu">外卖打包盒、袋子、餐具，一般占 4–6%，外卖占比高就更高。</p>
+
+    <h3>6. 人工工资</h3>
+    <code>人工 = 经营合伙人工资 + 额外雇工</code>
+    <p class="mu">机器人省了厨师，但店长（经营合伙人）、打包、配送对接还要人。这是门店成本（旱涝保收），跟后面分红是两回事。</p>
+
+    <h3>7. 设备折旧</h3>
+    <code>月折旧 = 设备总价 ÷ 折旧年限 ÷ 12</code>
+    <p class="mu">炒菜机器人不是一个月花掉的，按能用几年摊到每月，利润才算得真实。</p>
+
+    <h3>8. 月总成本 & 净利润</h3>
+    <code>月总成本 = 食材 + 外卖抽成 + 满减补贴 + 包装 + 人工 + 房租水电营销 + 折旧</code>
+    <code>月净利润 = 月营业额 − 月总成本</code>
+    <p class="mu">净利率 = 净利润 ÷ 营业额。外卖快餐净利率普遍偏薄，扣点一高就贴地，是常态。</p>
+
+    <h3>9. 保本日单量（生死线）</h3>
+    <code>每单毛利 = 平均客单价 ×（1 − 变动成本率）</code>
+    <code>保本日单量 = 固定开销（人工+房租水电营销+折旧）÷（每单毛利 × 30）</code>
+    <p class="mu">变动成本率 = 食材率 + 包装率 + 外卖（抽成+满减）占总营业额的比例。低于保本单量天天亏——这是<b>最该去样板店核实的数字</b>。</p>
+
+    <h3>10. 回本周期</h3>
+    <code>回本周期（月）= 启动总投入 ÷ 月净利润</code>
+    <p class="mu">一次性砸进去的钱，按每月净利多少个月赚回来。亏损时显示"亏损"。</p>
+
+    <h3>11. 分钱（郝哥的结构）</h3>
+    <code>分红 = 月净利润 × 各自股份（亏损不分红）</code>
+    <code>经营合伙人到手 = 本人工资 + 分红</code>
+    <code>郝哥（出资方）到手 = 分红（不拿工资）</code>
+    <p class="mu">两个看点：① 经营合伙人扛全部日常，"工资+分红"加起来值不值，否则留不住人；② 郝哥只出钱+指挥、不拿工资，分红够不够覆盖他这笔投入的机会成本。</p>
+  </div>
+
+  <div class="warnbox" style="background:var(--bluebg);border-color:#bcd6ef;color:#11436f">
+    📌 <b>这只是"单店模型"</b>，是地基。区代/多店那一层（加盟费×开几家、能不能从下面店供货赚返点、总投入风险敞口）要另算。<b>单店真账都不稳赚，多开只会亏得更快。</b>
+  </div>
+</div>
+
+<script>
+function num(id){return parseFloat(document.getElementById(id).value)||0;}
+function yuan(n){var s=Math.round(Math.abs(n)).toLocaleString();return (n<0?'-¥':'¥')+s;}
+
+function preset(t){
+  var v={low:{take:60,dine:10},mid:{take:100,dine:20},high:{take:150,dine:30}}[t];
+  document.getElementById('d_take').value=v.take;
+  document.getElementById('d_dine').value=v.dine;
+  calc();
+}
+
+function calc(){
+  document.getElementById('o_d_take').textContent=num('d_take')+' 单';
+  document.getElementById('o_p_take').textContent='¥'+num('p_take');
+  document.getElementById('o_d_dine').textContent=num('d_dine')+' 单';
+  document.getElementById('o_p_dine').textContent='¥'+num('p_dine');
+  document.getElementById('o_c_food').textContent=num('c_food')+'%';
+  document.getElementById('o_c_dfee').textContent=num('c_dfee')+'%';
+  document.getElementById('o_c_promo').textContent=num('c_promo')+'%';
+  document.getElementById('o_c_pack').textContent=num('c_pack')+'%';
+  document.getElementById('o_c_rent').textContent=yuan(num('c_rent'));
+  document.getElementById('o_c_util').textContent=yuan(num('c_util'));
+  document.getElementById('o_c_mkt').textContent=yuan(num('c_mkt'));
+  document.getElementById('o_w_op').textContent=yuan(num('w_op'));
+  document.getElementById('o_w_hire').textContent=yuan(num('w_hire'));
+  document.getElementById('o_i_equip').textContent=yuan(num('i_equip'));
+  document.getElementById('o_i_deco').textContent=yuan(num('i_deco'));
+  document.getElementById('o_i_misc').textContent=yuan(num('i_misc'));
+  document.getElementById('o_i_dep').textContent=num('i_dep')+' 年';
+  document.getElementById('o_op_share').textContent=num('op_share')+'%';
+
+  var revTake=num('d_take')*num('p_take')*30;
+  var revDine=num('d_dine')*num('p_dine')*30;
+  var rev=revTake+revDine;
+  var orders=num('d_take')+num('d_dine');
+
+  var food=rev*num('c_food')/100;
+  var dfee=revTake*num('c_dfee')/100;
+  var promo=revTake*num('c_promo')/100;
+  var pack=rev*num('c_pack')/100;
+  var labor=num('w_op')+num('w_hire');
+  var fixed=num('c_rent')+num('c_util')+num('c_mkt');
+  var dep=num('i_equip')/(num('i_dep')||1)/12;
+  var cost=food+dfee+promo+pack+labor+fixed+dep;
+  var profit=rev-cost;
+
+  document.getElementById('r_rev').textContent=yuan(rev);
+  document.getElementById('r_food').textContent='-'+yuan(food);
+  document.getElementById('r_dfee').textContent='-'+yuan(dfee);
+  document.getElementById('r_promo').textContent='-'+yuan(promo);
+  document.getElementById('r_pack').textContent='-'+yuan(pack);
+  document.getElementById('r_labor').textContent='-'+yuan(labor);
+  document.getElementById('r_fixed').textContent='-'+yuan(fixed);
+  document.getElementById('r_dep').textContent='-'+yuan(dep);
+  document.getElementById('r_cost').textContent='-'+yuan(cost);
+  var pe=document.getElementById('r_profit');
+  pe.textContent=(profit>=0?'+':'')+yuan(profit); pe.className='v '+(profit>=0?'pos':'neg');
+  document.getElementById('r_margin').textContent=rev>0?Math.round(profit/rev*100)+'%':'0%';
+  var takerate=revTake>0?Math.round((1-num('c_dfee')/100-num('c_promo')/100)*100):0;
+  document.getElementById('r_takerate').textContent=revTake>0?takerate+'%（标价100到手'+takerate+'）':'—';
+
+  var avgPrice=orders>0?rev/(orders*30):0;
+  var varRate=rev>0?(food+dfee+promo+pack)/rev:0;
+  var contribOrder=avgPrice*(1-varRate);
+  var fixedTotal=labor+fixed+dep;
+  var be=contribOrder>0?Math.ceil(fixedTotal/(contribOrder*30)):0;
+
+  var invest=num('i_equip')+num('i_deco')+num('i_misc');
+  var payback=profit>0?invest/profit:0;
+
+  document.getElementById('m_rev').textContent=yuan(rev);
+  var mp=document.getElementById('m_profit');
+  mp.textContent=(profit>=0?'+':'')+yuan(profit); mp.className='v '+(profit>=0?'pos':'neg');
+  document.getElementById('m_be').textContent=be+' 单';
+  document.getElementById('m_payback').textContent=profit>0?(payback<1?'<1 个月':Math.round(payback)+' 个月'):'亏损';
+
+  var opSh=num('op_share')/100, invSh=1-opSh;
+  var divid=profit>0?profit:0;
+  var opTake=num('w_op')+divid*opSh;
+  var invTake=divid*invSh;
+  document.getElementById('r_inv_take').textContent=yuan(invTake);
+  document.getElementById('r_op_take').textContent=yuan(opTake);
+  document.getElementById('r_op_year').textContent=yuan(opTake*12);
+
+  var v=document.getElementById('verdict');
+  if(profit>=0){
+    v.className='verdict ok';
+    v.innerHTML='✓ 日均 '+orders+' 单，已过保本线（'+be+' 单）。月赚 '+yuan(profit)+
+      '，约 '+(payback<1?'不到1个月':Math.round(payback)+'个月')+'回本。郝哥分红约 '+yuan(invTake)+'/月，经营合伙人到手约 '+yuan(opTake)+'/月。';
+  }else{
+    v.className='verdict bad';
+    v.innerHTML='✗ 日均 '+orders+' 单，没到保本线（要 '+be+' 单）。月亏 '+yuan(-profit)+
+      '。经营合伙人只剩工资 '+yuan(num('w_op'))+'，亏的还得郝哥垫。';
+  }
+}
+document.querySelectorAll('input[type=range]').forEach(function(i){i.addEventListener('input',calc);});
+calc();
+</script>
+</body>
+</html>

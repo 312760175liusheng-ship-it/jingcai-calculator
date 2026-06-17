@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快炒外卖店 · 外部实地调查表</title>
+<style>
+  :root{
+    --bg:#f5f5f0; --card:#ffffff; --line:#e3e1d8; --text:#2c2c2a; --muted:#76746c;
+    --accent:#1d9e75; --accentbg:#e1f5ee; --danger:#c0392b; --dangerbg:#fbeaea;
+    --blue:#185fa5; --bluebg:#e6f1fb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6; padding:16px;}
+  .wrap{max-width:720px; margin:0 auto;}
+  h1{font-size:22px; font-weight:600; margin:8px 0 4px;}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 16px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin-bottom:16px;}
+  .card h2{font-size:16px; font-weight:600; margin:0 0 2px; display:flex; align-items:center; gap:8px;}
+  .card .hint{color:var(--muted); font-size:13px; margin:2px 0 14px;}
+  .field{margin-bottom:13px;}
+  .field label{display:block; font-size:14px; font-weight:500; margin-bottom:4px;}
+  .field .sh{font-size:12px; color:var(--muted); font-weight:400; margin-left:4px;}
+  input[type=text], textarea{width:100%; border:1px solid var(--line); border-radius:8px;
+    padding:10px 12px; font-size:16px; font-family:inherit; color:var(--text); background:#fdfdfb;}
+  input[type=text]:focus, textarea:focus{outline:none; border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accentbg);}
+  textarea{min-height:64px; resize:vertical; line-height:1.5;}
+  .done{display:flex; align-items:center; gap:8px; margin-top:10px; font-size:13px; color:var(--accent);}
+  .done input{width:18px; height:18px; accent-color:var(--accent);}
+  .tag{font-size:12px; font-weight:600; color:#fff; background:var(--accent);
+    border-radius:6px; padding:2px 8px;}
+  .calcbox{background:var(--bluebg); border:1px solid #bcd6ef; border-radius:10px;
+    padding:12px 14px; font-size:14px; color:#11436f; margin:8px 0 4px;}
+  .calcbox b{color:#0c3559;}
+  .live{font-size:15px; font-weight:600; color:var(--accent);}
+  .warnbox{background:var(--dangerbg); border:1px solid #f0c9c4; border-radius:10px;
+    padding:12px 14px; font-size:13.5px; color:#8a2b20; margin-bottom:16px;}
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 4px;}
+  .btn{border:1px solid var(--line); background:#fff; border-radius:8px; padding:9px 16px;
+    font-size:14px; cursor:pointer; color:var(--text);}
+  .btn:hover{background:var(--bg);} .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .saved{font-size:12px; color:var(--muted); margin-left:6px;}
+  table.sum{width:100%; border-collapse:collapse; font-size:14px;}
+  table.sum td{padding:7px 4px; border-bottom:1px dashed var(--line); vertical-align:top;}
+  table.sum td:first-child{color:var(--muted); width:46%;}
+  table.sum td:last-child{font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>快炒外卖店 · 外部实地调查表</h1>
+  <p class="sub">逐格填，自动保存（关掉网页也不丢）。心法一句：别问前手下要数（他不会给对手真话），靠两个身份扒——<b>顾客</b> + <b>意向加盟商</b>。</p>
+
+  <div class="warnbox">
+    🔑 <b>动机对齐</b>：前手下利益冲突，嘴里没真话；<b>总部招商方</b>巴不得你加盟，加盟费/供货价/单店测算都肯端给你——同样要数，找对人就全有了。
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">行动一</span> 外卖 App 侦察 <span class="sh">（在家 5 分钟）</span></h2>
+    <p class="hint">打开美团/饿了么，搜到那家店，照着填。</p>
+    <div class="field"><label>店铺页「月售」总数 <span class="sh">真实单量量级</span></label><input type="text" id="a_monthly" placeholder="如：月售 3000+ 单"></div>
+    <div class="field"><label>招牌单品 + 月售份数 <span class="sh">估爆款和客单价</span></label><input type="text" id="a_items" placeholder="如：招牌小炒肉饭 月售800 / ¥23"></div>
+    <div class="field"><label>它挂的满减/券/活动 <span class="sh">照抄，估补贴力度</span></label><textarea id="a_promo" placeholder="如：满20减5、满40减12、新客券5元、配送费3元…"></textarea></div>
+    <div class="field"><label>亲自下一单测试 <span class="sh">下到结算页，记两个数</span></label>
+      <div class="btnrow" style="gap:8px">
+        <input type="text" id="a_listed" placeholder="标价合计 ¥" style="flex:1">
+        <input type="text" id="a_paid" placeholder="实付 ¥" style="flex:1">
+      </div>
+      <div class="calcbox" id="discount_box">顾客优惠率：填上面两个数自动算 →</div>
+    </div>
+    <div class="field"><label>评分 / 评价数 / 配送范围</label><input type="text" id="a_misc" placeholder="如：4.7分 / 8000+评价 / 3公里"></div>
+    <div class="done"><input type="checkbox" id="done1"><label for="done1" style="margin:0;cursor:pointer">这一步做完了</label></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">行动二</span> 去店里吃一次 <span class="sh">（实地）</span></h2>
+    <p class="hint">当顾客进去，眼睛是尺子。最好午/晚高峰各去一次。</p>
+    <div class="field"><label>几个人在干活 / 什么岗位</label><input type="text" id="b_staff" placeholder="如：3人——1前台打包、2出餐"></div>
+    <div class="field"><label>后厨：炒菜机器人几台 / 还剩几个厨师 <span class="sh">验证"机器人省人工"真假</span></label><input type="text" id="b_kitchen" placeholder="如：2台炒菜机 + 1人配菜，无大厨"></div>
+    <div class="field"><label>店面面积 / 位置 / 客流</label><input type="text" id="b_shop" placeholder="如：约40平、临街、堂食5桌坐满"></div>
+    <div class="field"><label>高峰期忙不忙 <span class="sh">出单密度</span></label><input type="text" id="b_peak" placeholder="如：中午12点出单不停，骑手排队"></div>
+    <div class="done"><input type="checkbox" id="done2"><label for="done2" style="margin:0;cursor:pointer">这一步做完了</label></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">行动三</span> 查房租 <span class="sh">（找铺人视角）</span></h2>
+    <p class="hint">位置看得见，租金问得到。</p>
+    <div class="field"><label>商圈 / 路段</label><input type="text" id="c_area" placeholder="如：XX商业广场临街"></div>
+    <div class="field"><label>大概面积（平）</label><input type="text" id="c_size" placeholder="如：40平"></div>
+    <div class="field"><label>同地段同面积挂牌租金 <span class="sh">58/贝壳商铺 或问中介</span></label><input type="text" id="c_rent" placeholder="如：约 12000 元/月"></div>
+    <div class="done"><input type="checkbox" id="done3"><label for="done3" style="margin:0;cursor:pointer">这一步做完了</label></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">行动四</span> 招商打探 <span class="sh">（"我想加盟"身份）</span></h2>
+    <p class="hint">找品牌招商电话/官网/抖音招商号，以柳州意向加盟商的口气问全。这一通能一次拿一堆。</p>
+    <div class="field"><label>加盟费</label><input type="text" id="d_join" placeholder="如：3.8万"></div>
+    <div class="field"><label>保证金</label><input type="text" id="d_deposit" placeholder="如：1万（可退）"></div>
+    <div class="field"><label>设备款（炒菜机器人等）</label><input type="text" id="d_equip" placeholder="如：8万"></div>
+    <div class="field"><label>装修标准 / 费用</label><input type="text" id="d_deco" placeholder="如：自装，约3万"></div>
+    <div class="field"><label>供货价 / 食材成本率 <span class="sh">关键，他们会美化</span></label><input type="text" id="d_food" placeholder="如：自称食材占40%（按45%+压力测）"></div>
+    <div class="field"><label>有没有代运营费 / 抽成</label><input type="text" id="d_ops" placeholder="如：代运营每月XXX 或 流水X%"></div>
+    <div class="field"><label>招商方给的「单店盈利测算」 <span class="sh">照记，当美化上限</span></label><textarea id="d_model" placeholder="如：他们说月营业额12万、净利2万、半年回本…（自己往坏里打折）"></textarea></div>
+    <div class="done"><input type="checkbox" id="done4"><label for="done4" style="margin:0;cursor:pointer">这一步做完了</label></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 汇总（填进利润计算器用这些）</h2>
+    <p class="hint">下面是从你上面填的内容里拎出来的关键数；空着的就是还没扒到。拿这些去填 <a href="calc.html" target="_blank" style="color:var(--accent);font-weight:600">利润计算器</a>（点开就是）。</p>
+    <table class="sum">
+      <tr><td>月单量</td><td id="s_monthly">—</td></tr>
+      <tr><td>客单价（招牌单品参考）</td><td id="s_items">—</td></tr>
+      <tr><td>顾客优惠率（≈商家满减负担线索）</td><td id="s_discount">—</td></tr>
+      <tr><td>食材成本率</td><td id="s_food">—</td></tr>
+      <tr><td>房租/月</td><td id="s_rent">—</td></tr>
+      <tr><td>人工（人数/岗位）</td><td id="s_staff">—</td></tr>
+      <tr><td>启动投入（加盟+保证金+设备+装修）</td><td id="s_invest">—</td></tr>
+    </table>
+    <div class="calcbox" style="margin-top:12px">
+      <b>填计算器时的保守兜底值</b>（扒不到就用这个，宁可估坏不估好）：食材率 <b>45–48%</b>｜外卖满减 <b>15–20%</b>｜平台抽成 <b>22%</b>｜房租按真实地段，别用偏僻厨房低租冒充好商业区。<br>
+      ✅ 判断线：连保守假设下都还赚 → 才值得继续；一压就贴地或亏 → 趁早收手，省一座厂。
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" onclick="copyAll()">📋 复制全部记录</button>
+      <button class="btn" onclick="clearAll()">🗑 清空重填</button>
+      <span class="saved" id="savedtip"></span>
+    </div>
+  </div>
+
+  <p class="sub">所有内容只存在你这台电脑的浏览器里（自动保存），不上传任何地方。</p>
+</div>
+
+<script>
+var fields=['a_monthly','a_items','a_promo','a_listed','a_paid','a_misc',
+  'b_staff','b_kitchen','b_shop','b_peak','c_area','c_size','c_rent',
+  'd_join','d_deposit','d_equip','d_deco','d_food','d_ops','d_model'];
+var checks=['done1','done2','done3','done4'];
+var KEY='kc_survey_v1';
+
+function val(id){var e=document.getElementById(id); return e?e.value:'';}
+
+function save(){
+  var data={};
+  fields.forEach(function(id){data[id]=val(id);});
+  checks.forEach(function(id){data[id]=document.getElementById(id).checked;});
+  localStorage.setItem(KEY, JSON.stringify(data));
+  var t=document.getElementById('savedtip'); t.textContent='已自动保存 ✓';
+  clearTimeout(window._st); window._st=setTimeout(function(){t.textContent='';},1500);
+}
+
+function restore(){
+  var raw=localStorage.getItem(KEY); if(!raw) return;
+  try{var data=JSON.parse(raw);}catch(e){return;}
+  fields.forEach(function(id){if(data[id]!=null)document.getElementById(id).value=data[id];});
+  checks.forEach(function(id){if(data[id]!=null)document.getElementById(id).checked=data[id];});
+}
+
+function refresh(){
+  var listed=parseFloat((val('a_listed')||'').replace(/[^\d.]/g,''));
+  var paid=parseFloat((val('a_paid')||'').replace(/[^\d.]/g,''));
+  var dbox=document.getElementById('discount_box');
+  var sd=document.getElementById('s_discount');
+  if(listed>0 && paid>=0 && paid<=listed){
+    var rate=Math.round((listed-paid)/listed*100);
+    dbox.innerHTML='顾客优惠率：<span class="live">'+rate+'%</span>（标价'+listed+' → 实付'+paid+'）。商家实际到手 ≈ 1 − 平台抽成(约22%) − 商家自己承担的那部分满减，比这还低。';
+    sd.textContent=rate+'%（标价'+listed+'→实付'+paid+'）';
+  }else{
+    dbox.innerHTML='顾客优惠率：填上面两个数自动算 →';
+    sd.textContent='—';
+  }
+  function ec(sid,fid){var v=val(fid).trim(); document.getElementById(sid).textContent=v?v:'—';}
+  ec('s_monthly','a_monthly');
+  ec('s_items','a_items');
+  ec('s_food','d_food');
+  ec('s_rent','c_rent');
+  ec('s_staff','b_staff');
+  var inv=['d_join','d_deposit','d_equip','d_deco'].map(function(id){return val(id).trim();}).filter(Boolean);
+  document.getElementById('s_invest').textContent=inv.length?inv.join(' + '):'—';
+}
+
+function copyAll(){
+  var L=function(t){return t;};
+  var s='【快炒外卖店 · 实地调查记录】\n\n';
+  s+='〔行动一·外卖App〕\n';
+  s+='月售总数：'+val('a_monthly')+'\n招牌单品：'+val('a_items')+'\n满减活动：'+val('a_promo')+'\n测试单：标价'+val('a_listed')+' / 实付'+val('a_paid')+'\n评分配送：'+val('a_misc')+'\n\n';
+  s+='〔行动二·实地探店〕\n';
+  s+='人手岗位：'+val('b_staff')+'\n后厨机器人/厨师：'+val('b_kitchen')+'\n店面：'+val('b_shop')+'\n高峰：'+val('b_peak')+'\n\n';
+  s+='〔行动三·房租〕\n';
+  s+='商圈：'+val('c_area')+'\n面积：'+val('c_size')+'\n挂牌租金：'+val('c_rent')+'\n\n';
+  s+='〔行动四·招商打探〕\n';
+  s+='加盟费：'+val('d_join')+'\n保证金：'+val('d_deposit')+'\n设备款：'+val('d_equip')+'\n装修：'+val('d_deco')+'\n食材率：'+val('d_food')+'\n代运营费：'+val('d_ops')+'\n招商单店测算：'+val('d_model')+'\n';
+  navigator.clipboard.writeText(s).then(function(){
+    var t=document.getElementById('savedtip'); t.textContent='已复制到剪贴板 ✓';
+    clearTimeout(window._st); window._st=setTimeout(function(){t.textContent='';},2000);
+  }, function(){ alert('复制失败，请手动选择文字复制'); });
+}
+
+function clearAll(){
+  if(!confirm('确定清空所有已填内容？此操作不可撤销。')) return;
+  localStorage.removeItem(KEY);
+  fields.forEach(function(id){document.getElementById(id).value='';});
+  checks.forEach(function(id){document.getElementById(id).checked=false;});
+  refresh();
+}
+
+restore();
+refresh();
+document.querySelectorAll('input,textarea').forEach(function(el){
+  el.addEventListener('input',function(){save();refresh();});
+  el.addEventListener('change',function(){save();refresh();});
+});
+</script>
+</body>
+</html>
